@@ -1,0 +1,63 @@
+import type { Metadata } from "next";
+import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
+import "./globals.css";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { CartProvider } from "@/lib/cart/CartContext";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+
+// Body / UI font
+const cairo = Cairo({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-cairo",
+  display: "swap",
+});
+
+// Display / headings font
+const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["500", "600", "700"],
+  variable: "--font-ibm-plex-arabic",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://adaa.store"),
+  title: {
+    default: "أداء | تحسين أداء أجهزة الألعاب",
+    template: "%s | أداء",
+  },
+  description:
+    "خدمة احترافية لتحسين أداء أجهزة الكمبيوتر والألعاب — فحص شامل وضبط دقيق لإعدادات الويندوز والبايوس للحصول على أعلى فريمات وأقل تأخير.",
+  keywords: ["تحسين الأداء", "زيادة الفريمات", "FPS", "أداء", "ألعاب", "تحسين الجهاز"],
+  openGraph: {
+    title: "أداء | تحسين أداء أجهزة الألعاب",
+    description: "استفِد بكامل قوة جهازك — أعلى فريمات، أقل تأخير، وأنعم سلاسة.",
+    locale: "ar_SA",
+    type: "website",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="ar"
+      dir="rtl"
+      className={`${cairo.variable} ${ibmPlexArabic.variable} h-full antialiased`}
+    >
+      <body className="flex min-h-screen flex-col bg-bg text-foreground">
+        <CartProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
+        </CartProvider>
+      </body>
+    </html>
+  );
+}

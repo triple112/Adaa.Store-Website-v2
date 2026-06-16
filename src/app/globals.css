@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   ADAA — Design tokens
+   Single source of truth for the brand. Change a value here and it
+   propagates across every component (Tailwind v4 @theme generates the
+   matching utilities: bg-*, text-*, border-*, font-*).
+   ========================================================================= */
+@theme {
+  /* Surfaces (dark, near-black with subtle steps) */
+  --color-bg: #0e0e0e;
+  --color-surface: #141414;
+  --color-elevated: #1a1a1a;
+
+  /* Text */
+  --color-foreground: #ffffff;
+  --color-muted: #b0b0b0;
+  --color-subtle: #8c8c8c;
+  --color-faint: #555555;
+
+  /* Brand greens */
+  --color-primary: #508d4e;
+  --color-primary-light: #80af81;
+  --color-accent: #10b981;
+
+  /* Lines */
+  --color-border: rgba(255, 255, 255, 0.08);
+
+  /* Typography roles */
+  --font-sans: var(--font-cairo), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-ibm-plex-arabic), var(--font-cairo), sans-serif;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout */
+  --spacing-section: 96px;
+}
+
+/* =========================================================================
+   Base
+   ========================================================================= */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(80, 141, 78, 0.35);
+    color: #fff;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+  }
+}
+
+/* =========================================================================
+   Reusable effects
+   ========================================================================= */
+
+/* Text gradient (used by hero title + display accents) */
+.text-gradient {
+  background: linear-gradient(45deg, #ffffff 10%, var(--color-primary-light) 45%, var(--color-primary) 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft radial glow placed behind hero / focal sections */
+.ambient-glow::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 700px;
+  height: 700px;
+  max-width: 120%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(80, 141, 78, 0.16) 0%, rgba(14, 14, 14, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Edge fade mask for horizontal marquees */
+.fade-x {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+}
+
+/* =========================================================================
+   Marquee engine
+   Two identical groups, each animated the same. The first scrolls off one
+   edge while the second takes its place, so the loop is seamless.
+
+   `direction: ltr` is REQUIRED: the page is dir="rtl", and the duplicate
+   technique relies on flex laying the second group AFTER (to the right of)
+   the first. Under RTL the second copy would land on the left, off-screen,
+   leaving an empty gap on the right at the loop point. Forcing ltr here only
+   affects the flex order of the groups/cards — each card sets its own
+   dir="rtl" for its text.
+
+   `min-width: 100%` + `justify-content: space-around` guarantee each group is
+   at least viewport-wide and never clumps, so there is NEVER an empty gap at
+   the loop point — on any screen size, ultrawide included.
+   ========================================================================= */
+@keyframes adaa-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--marquee-gap, 24px)));
+  }
+}
+
+.adaa-marquee {
+  position: relative;
+  display: flex;
+  direction: ltr;
+  width: 100%;
+  overflow: hidden;
+  gap: var(--marquee-gap, 24px);
+}
+
+.adaa-marquee-group {
+  display: flex;
+  flex-shrink: 0;
+  min-width: 100%;
+  align-items: stretch; /* equalize card heights within a row */
+  justify-content: space-around;
+  gap: var(--marquee-gap, 24px);
+  animation: adaa-marquee var(--marquee-duration, 60s) linear infinite;
+  animation-direction: var(--marquee-direction, normal);
+}
+
+/* `direction` prop → travel direction. "right" plays the same keyframes in
+   reverse (content moves right, the left copy fills in). */
+.adaa-marquee[data-direction="right"] .adaa-marquee-group {
+  animation-direction: reverse;
+}
+
+.adaa-marquee[data-pausable="true"]:hover .adaa-marquee-group {
+  animation-play-state: paused;
+}
+
+/* =========================================================================
+   Live performance chart (pure CSS, no JS)
+   ========================================================================= */
+@keyframes adaa-chart-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-1600px);
+  }
+}
+
+.adaa-chart-group {
+  width: 2400px;
+  animation: adaa-chart-scroll 25s linear infinite;
+  will-change: transform;
+}
+
+/* =========================================================================
+   Accessibility — honor reduced motion
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .adaa-marquee-group,
+  .adaa-chart-group {
+    animation: none !important;
+  }
+}
