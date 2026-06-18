@@ -282,14 +282,15 @@ ${button(d.accountUrl, "إدارة اشتراكي")}`;
 
 type ReportMetric = { label: string; before?: string; after?: string; value?: string; unit?: string };
 
-/** Render report metric rows (before→after or a single value), Latin digits, RTL. */
+/** Render report metric rows. before→after reads right→left in this RTL cell
+ * via a single LTR wrapper: "before → after" (arrow points to the new value). */
 function metricsTable(metrics: ReportMetric[]): string {
   const rows = metrics
     .map((m) => {
       const unit = m.unit ? ` ${esc(m.unit)}` : "";
       let val: string;
       if (m.before || m.after) {
-        val = `<span dir="ltr">${esc(latin(m.before ?? "—"))}${unit}</span> &nbsp;→&nbsp; <span dir="ltr" style="color:${C.green};font-weight:700">${esc(latin(m.after ?? "—"))}${unit}</span>`;
+        val = `<span dir="ltr">${esc(latin(m.before ?? "—"))}${unit} &nbsp;→&nbsp; <b style="color:${C.green}">${esc(latin(m.after ?? "—"))}${unit}</b></span>`;
       } else {
         val = m.value
           ? `<span dir="ltr" style="font-weight:700;color:${C.ink}">${esc(latin(m.value))}${unit}</span>`
@@ -309,6 +310,7 @@ export function installationReportEmail(d: {
   cpuModel?: string | null;
   gpuModel?: string | null;
   metrics: ReportMetric[];
+  tweaksCount?: number;
   reportUrl: string;
   discordUrl: string;
 }): EmailContent {
@@ -316,12 +318,16 @@ export function installationReportEmail(d: {
   const hw = [d.cpuModel ? `المعالج: ${esc(d.cpuModel)}` : "", d.gpuModel ? `كرت الشاشة: ${esc(d.gpuModel)}` : ""]
     .filter(Boolean)
     .join(" &nbsp;·&nbsp; ");
+  const tweaks = d.tweaksCount && d.tweaksCount > 0
+    ? para(`✅ تم تطبيق <b>${latin(String(d.tweaksCount))}</b> تعديلًا احترافيًا على جهازك (التفاصيل الكاملة في التقرير).`)
+    : "";
   const body = `
 ${heading("تم تركيب خدمتك بنجاح ✅")}
 ${lead(`${hi}<br/>خلّصنا تحسين أداء جهازك، وده تقريرك المفصّل بالنتائج قبل وبعد.`)}
 ${orderBadge(d.orderNumber)}
 ${hw ? para(`<b>الجهاز:</b> ${hw}`) : ""}
 ${infoBox(metricsTable(d.metrics))}
+${tweaks}
 ${button(d.reportUrl, "عرض تقرير التركيب الكامل")}
 <p style="margin:18px 0 0;font-family:${FONT};font-size:13px;color:${C.muted};text-align:center">
 لأي استفسار بعد الخدمة تواصل معانا عبر <a href="${esc(d.discordUrl)}" style="color:${C.green}">ديسكورد</a>.</p>`;

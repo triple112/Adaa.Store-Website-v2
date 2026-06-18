@@ -68,6 +68,7 @@ export function sendInstallationReport(
     cpuModel?: string | null;
     gpuModel?: string | null;
     metrics: ReportMetric[];
+    tweaksCount?: number;
   },
 ) {
   return sendEmail({
@@ -78,6 +79,7 @@ export function sendInstallationReport(
       cpuModel: d.cpuModel,
       gpuModel: d.gpuModel,
       metrics: d.metrics,
+      tweaksCount: d.tweaksCount ?? 0,
       reportUrl: `${SITE}/report/${d.reportId}`,
       discordUrl: siteConfig.discordUrl,
     }),

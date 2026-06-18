@@ -16,7 +16,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const { data } = await admin
     .from("installation_reports")
     .select(
-      "id, order_id, created_by, customer_name, discord_username, discord_nickname, cpu_model, gpu_model, metrics, notes, created_at, updated_at, order:orders(order_number, created_at)",
+      "id, order_id, created_by, customer_name, discord_username, discord_nickname, cpu_model, gpu_model, metrics, tweaks, notes, created_at, updated_at, order:orders(order_number, created_at)",
     )
     .eq("id", id)
     .maybeSingle();

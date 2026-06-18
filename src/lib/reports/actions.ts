@@ -7,7 +7,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveUserByEmail } from "@/lib/orders/finalize";
 import { sendInstallationReport, sendWelcomeMagicLink } from "@/lib/email/send";
 import { buildAuthConfirmLink } from "@/lib/auth/links";
-import { cleanMetrics, resolvePerfPackage, type ReportMetric } from "@/lib/reports/types";
+import {
+  cleanMetrics,
+  cleanTweaks,
+  tweaksCount,
+  resolvePerfPackage,
+  type ReportMetric,
+  type TweakGroup,
+} from "@/lib/reports/types";
 
 type Result = { ok?: true; reportId?: string; orderId?: string; error?: string };
 
@@ -19,6 +26,7 @@ export type ReportFields = {
   cpuModel: string;
   gpuModel: string;
   metrics: ReportMetric[];
+  tweaks: TweakGroup[];
   notes: string;
 };
 
@@ -32,6 +40,7 @@ function reportRow(orderId: string, adminId: string, f: ReportFields) {
     cpu_model: f.cpuModel.trim() || null,
     gpu_model: f.gpuModel.trim() || null,
     metrics: cleanMetrics(f.metrics),
+    tweaks: cleanTweaks(f.tweaks),
     notes: f.notes.trim() || null,
   };
 }
@@ -78,6 +87,7 @@ export async function createReportFromOrder(orderId: string, fields: ReportField
       cpuModel: fields.cpuModel,
       gpuModel: fields.gpuModel,
       metrics: cleanMetrics(fields.metrics),
+      tweaksCount: tweaksCount(cleanTweaks(fields.tweaks)),
     }).catch(() => {});
   }
 
@@ -161,6 +171,7 @@ export async function createManualReport(input: {
     cpuModel: input.fields.cpuModel,
     gpuModel: input.fields.gpuModel,
     metrics: cleanMetrics(input.fields.metrics),
+    tweaksCount: tweaksCount(cleanTweaks(input.fields.tweaks)),
   }).catch(() => {});
 
   if (isNew) {

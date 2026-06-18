@@ -6,7 +6,9 @@ import { toLatinDigits, formatOrderNumber } from "@/lib/site-config";
 import {
   DEFAULT_METRICS,
   PERF_PACKAGE_OPTIONS,
+  TWEAKS_TEMPLATE,
   type ReportMetric,
+  type TweakGroup,
 } from "@/lib/reports/types";
 import {
   createReportFromOrder,
@@ -41,6 +43,14 @@ const seedRows: MetricRow[] = DEFAULT_METRICS.map((m) => ({
   value: m.value ?? "",
 }));
 
+type TweakItemState = { label: string; checked: boolean; custom: boolean };
+type TweakCatState = { category: string; items: TweakItemState[] };
+
+const seedTweaks: TweakCatState[] = TWEAKS_TEMPLATE.map((g) => ({
+  category: g.category,
+  items: g.items.map((label) => ({ label, checked: true, custom: false })),
+}));
+
 const inputCls =
   "w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-faint focus:border-primary-light/50 focus:outline-none";
 const labelCls = "mb-1.5 block text-xs font-semibold text-muted";
@@ -66,6 +76,7 @@ export function CreateReportForm({ orders }: { orders: OrderOption[] }) {
   const [gpuModel, setGpuModel] = useState("");
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<MetricRow[]>(seedRows);
+  const [tweaks, setTweaks] = useState<TweakCatState[]>(seedTweaks);
 
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -93,13 +104,57 @@ export function CreateReportForm({ orders }: { orders: OrderOption[] }) {
     setRows((r) => r.filter((_, idx) => idx !== i));
   }
 
+  function toggleTweak(ci: number, ii: number) {
+    setTweaks((t) =>
+      t.map((c, i) =>
+        i === ci
+          ? { ...c, items: c.items.map((it, j) => (j === ii ? { ...it, checked: !it.checked } : it)) }
+          : c,
+      ),
+    );
+  }
+  function setTweakLabel(ci: number, ii: number, label: string) {
+    setTweaks((t) =>
+      t.map((c, i) =>
+        i === ci ? { ...c, items: c.items.map((it, j) => (j === ii ? { ...it, label } : it)) } : c,
+      ),
+    );
+  }
+  function addTweak(ci: number) {
+    setTweaks((t) =>
+      t.map((c, i) =>
+        i === ci ? { ...c, items: [...c.items, { label: "", checked: true, custom: true }] } : c,
+      ),
+    );
+  }
+  function removeTweak(ci: number, ii: number) {
+    setTweaks((t) =>
+      t.map((c, i) => (i === ci ? { ...c, items: c.items.filter((_, j) => j !== ii) } : c)),
+    );
+  }
+
   function buildFields(): ReportFields {
     const metrics: ReportMetric[] = rows.map((m) =>
       m.kind === "range"
         ? { label: m.label, before: m.before, after: m.after, unit: m.unit }
         : { label: m.label, value: m.value, unit: m.unit },
     );
-    return { customerName, discordUsername, discordNickname, cpuModel, gpuModel, metrics, notes };
+    const tweakGroups: TweakGroup[] = tweaks
+      .map((c) => ({
+        category: c.category,
+        items: c.items.filter((it) => it.checked && it.label.trim()).map((it) => it.label.trim()),
+      }))
+      .filter((c) => c.items.length > 0);
+    return {
+      customerName,
+      discordUsername,
+      discordNickname,
+      cpuModel,
+      gpuModel,
+      metrics,
+      tweaks: tweakGroups,
+      notes,
+    };
   }
 
   function submit() {
@@ -398,6 +453,75 @@ export function CreateReportForm({ orders }: { orders: OrderOption[] }) {
                 aria-label="حذف"
               >
                 ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* tweaks checklist */}
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-surface p-5">
+        <h3 className="text-sm font-bold text-muted">التعديلات المُطبقة (Checklist)</h3>
+        <p className="text-xs text-faint">
+          كل البنود متعلّمة افتراضيًا — شيل العلامة عن أي بند ماتطبّقش. البنود غير المتعلّمة مش هتظهر للعميل في التقرير.
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {tweaks.map((cat, ci) => (
+            <div key={cat.category} className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+              <h4 className="mb-2 text-xs font-bold text-primary-light">{cat.category}</h4>
+              <ul className="space-y-1.5">
+                {cat.items.map((it, ii) => (
+                  <li key={ii} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleTweak(ci, ii)}
+                      className={
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] " +
+                        (it.checked
+                          ? "border-primary bg-primary/20 text-primary-light"
+                          : "border-white/20 text-transparent")
+                      }
+                      aria-label="تبديل"
+                    >
+                      ✓
+                    </button>
+                    {it.custom ? (
+                      <input
+                        value={it.label}
+                        onChange={(e) => setTweakLabel(ci, ii, e.target.value)}
+                        placeholder="بند مخصّص"
+                        className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1 text-[13px] text-white placeholder:text-faint focus:border-primary-light/50 focus:outline-none"
+                      />
+                    ) : (
+                      <span
+                        onClick={() => toggleTweak(ci, ii)}
+                        className={
+                          "flex-1 cursor-pointer text-[13px] " +
+                          (it.checked ? "text-white" : "text-faint line-through")
+                        }
+                      >
+                        {it.label}
+                      </span>
+                    )}
+                    {it.custom && (
+                      <button
+                        type="button"
+                        onClick={() => removeTweak(ci, ii)}
+                        className="shrink-0 px-1 text-xs text-faint hover:text-red-400"
+                        aria-label="حذف"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() => addTweak(ci)}
+                className="mt-2 text-[11px] font-semibold text-primary-light hover:underline"
+              >
+                + بند مخصّص
               </button>
             </div>
           ))}
