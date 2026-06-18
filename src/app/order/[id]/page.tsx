@@ -29,6 +29,7 @@ type Order = {
 
 const STATUS_LABEL: Record<string, string> = {
   paid: "مدفوع",
+  installed: "تم التركيب",
   pending: "قيد المعالجة",
   failed: "فشل",
   refunded: "مسترد",
@@ -57,7 +58,15 @@ export default async function OrderPage({
 
   if (!order) notFound();
 
+  // Installation report (if the engineer has filed one for this order).
+  const { data: report } = await admin
+    .from("installation_reports")
+    .select("id")
+    .eq("order_id", order.id)
+    .maybeSingle<{ id: string }>();
+
   const isSubscription = order.type === "subscription";
+  const isInstalled = order.status === "installed";
   const orderNo = formatOrderNumber(order.order_number);
 
   return (
@@ -68,14 +77,31 @@ export default async function OrderPage({
           <CheckIcon className="h-10 w-10 text-primary-light" />
         </div>
         <h1 className="font-display text-3xl font-bold text-white sm:text-4xl">
-          تم الدفع بنجاح!
+          {isInstalled ? "تم تركيب خدمتك بنجاح!" : "تم الدفع بنجاح!"}
         </h1>
         <p className="mt-3 max-w-lg leading-relaxed text-muted">
-          {isSubscription
-            ? "ألف مبروك 🎉 اشتراكك في AdaaX اتفعّل. حمّل البرنامج وسجّل دخول بنفس حسابك."
-            : "ألف مبروك 🎉 طلبك وصل للسيستم وجاهز للتنفيذ. تواصل معنا برقم الطلب عشان نبدأ."}
+          {isInstalled
+            ? "ألف مبروك 🎉 خلّصنا تحسين أداء جهازك. تقدر تشوف تقرير التركيب بالنتائج قبل وبعد."
+            : isSubscription
+              ? "ألف مبروك 🎉 اشتراكك في AdaaX اتفعّل. حمّل البرنامج وسجّل دخول بنفس حسابك."
+              : "ألف مبروك 🎉 طلبك وصل للسيستم وجاهز للتنفيذ. تواصل معنا برقم الطلب عشان نبدأ."}
         </p>
       </div>
+
+      {report && (
+        <div className="mt-8 flex flex-col items-center gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center sm:flex-row sm:justify-between sm:text-right">
+          <div>
+            <h2 className="font-display text-lg font-bold text-white">تقرير عملية التركيب جاهز ✅</h2>
+            <p className="mt-0.5 text-sm text-muted">شوف نتائج تحسين الأداء (قبل / بعد) وحمّل التقرير PDF.</p>
+          </div>
+          <Link
+            href={`/report/${report.id}`}
+            className="shrink-0 rounded-xl bg-primary px-6 py-3 font-display font-bold text-white transition-colors hover:bg-primary-light"
+          >
+            📄 عرض التقرير
+          </Link>
+        </div>
+      )}
 
       {/* Two-column: action side + steps */}
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">

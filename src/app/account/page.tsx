@@ -22,6 +22,7 @@ const ORDER_TYPE_LABEL: Record<string, string> = {
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
   paid: "مدفوع",
+  installed: "تم التركيب",
   pending: "قيد المعالجة",
   failed: "فشل",
   refunded: "مسترد",
@@ -73,6 +74,14 @@ export default async function AccountPage() {
     .order("created_at", { ascending: false })
     .limit(20)
     .returns<OrderRow[]>();
+
+  // Installation reports the customer can view/download (RLS scopes to their orders).
+  const { data: reports } = await supabase
+    .from("installation_reports")
+    .select("id, order_id");
+  const reportByOrder = new Map(
+    (reports ?? []).map((r) => [r.order_id, r.id] as [string, string]),
+  );
 
   const displayName = profile?.display_name || profile?.email || "صديقنا";
 
@@ -136,37 +145,55 @@ export default async function AccountPage() {
 
         {orders && orders.length > 0 ? (
           <ul className="mt-5 divide-y divide-white/5">
-            {orders.map((order) => (
-              <li key={order.id}>
-                <Link
-                  href={`/order/${order.id}`}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg py-3.5 transition-colors hover:bg-white/[0.02]"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-primary-light">
-                        {formatOrderNumber(order.order_number)}
+            {orders.map((order) => {
+              const reportId = reportByOrder.get(order.id);
+              const installed = order.status === "installed";
+              return (
+                <li key={order.id} className="py-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <Link
+                      href={`/order/${order.id}`}
+                      className="-mx-2 min-w-0 flex-1 rounded-lg px-2 py-1 transition-colors hover:bg-white/[0.02]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-primary-light">
+                          {formatOrderNumber(order.order_number)}
+                        </span>
+                        <span className="text-[11px] text-faint">
+                          {ORDER_TYPE_LABEL[order.type] ?? order.type}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-sm font-semibold text-white">
+                        {summarizeItems(order)}
+                      </p>
+                      <p className="text-xs text-faint">{formatDate(order.created_at)}</p>
+                    </Link>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-primary-light">
+                        {order.amount} {order.currency === "USD" ? "$" : order.currency}
                       </span>
-                      <span className="text-[11px] text-faint">
-                        {ORDER_TYPE_LABEL[order.type] ?? order.type}
+                      <span
+                        className={
+                          installed
+                            ? "rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 text-xs text-emerald-300"
+                            : "rounded-full border border-white/10 px-2.5 py-0.5 text-xs text-muted"
+                        }
+                      >
+                        {ORDER_STATUS_LABEL[order.status] ?? order.status}
                       </span>
                     </div>
-                    <p className="mt-0.5 truncate text-sm font-semibold text-white">
-                      {summarizeItems(order)}
-                    </p>
-                    <p className="text-xs text-faint">{formatDate(order.created_at)}</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-primary-light">
-                      {order.amount} {order.currency === "USD" ? "$" : order.currency}
-                    </span>
-                    <span className="rounded-full border border-white/10 px-2.5 py-0.5 text-xs text-muted">
-                      {ORDER_STATUS_LABEL[order.status] ?? order.status}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
+                  {reportId && (
+                    <Link
+                      href={`/report/${reportId}`}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary-light transition-colors hover:bg-primary/10"
+                    >
+                      📄 عرض تقرير التركيب
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="mt-5 rounded-xl border border-dashed border-white/10 bg-elevated/50 p-6 text-center text-sm text-muted">

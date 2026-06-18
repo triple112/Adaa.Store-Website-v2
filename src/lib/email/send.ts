@@ -6,8 +6,10 @@ import {
   welcomeMagicLinkEmail,
   passwordResetEmail,
   subscriptionRenewalEmail,
+  installationReportEmail,
 } from "./templates";
 import { siteConfig } from "@/lib/site-config";
+import type { ReportMetric } from "@/lib/reports/types";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://adaa.store";
 
@@ -55,6 +57,31 @@ export function sendWelcomeMagicLink(to: string, name: string | undefined, magic
 
 export function sendPasswordReset(to: string, resetLink: string) {
   return sendEmail({ to, ...passwordResetEmail({ resetLink }) });
+}
+
+export function sendInstallationReport(
+  to: string,
+  d: {
+    orderNumber: number;
+    reportId: string;
+    customerName?: string | null;
+    cpuModel?: string | null;
+    gpuModel?: string | null;
+    metrics: ReportMetric[];
+  },
+) {
+  return sendEmail({
+    to,
+    ...installationReportEmail({
+      orderNumber: d.orderNumber,
+      customerName: d.customerName,
+      cpuModel: d.cpuModel,
+      gpuModel: d.gpuModel,
+      metrics: d.metrics,
+      reportUrl: `${SITE}/report/${d.reportId}`,
+      discordUrl: siteConfig.discordUrl,
+    }),
+  });
 }
 
 export function sendSubscriptionRenewal(

@@ -7,7 +7,7 @@ type Item = { name?: string; qty?: number; price?: number; currency?: string };
 type Admin = ReturnType<typeof createAdminClient>;
 
 /** Find a profile by email, or silently create a new (passwordless) account. */
-async function resolveUserByEmail(
+export async function resolveUserByEmail(
   admin: Admin,
   email: string,
   name?: string,

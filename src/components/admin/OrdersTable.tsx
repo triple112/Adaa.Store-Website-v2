@@ -27,6 +27,7 @@ const PROVIDER_META: Record<string, { label: string; cls: string }> = {
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   paid: { label: "مدفوع", cls: "bg-primary/15 text-primary-light" },
+  installed: { label: "تم التركيب", cls: "bg-emerald-400/15 text-emerald-300" },
   pending: { label: "قيد المعالجة", cls: "bg-amber-400/15 text-amber-300" },
   failed: { label: "فشل", cls: "bg-red-500/15 text-red-300" },
   refunded: { label: "مسترد", cls: "bg-white/5 text-faint" },

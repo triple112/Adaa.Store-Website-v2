@@ -23,6 +23,14 @@ const LOGO = process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || "";
 
 export type EmailContent = { subject: string; html: string; text: string };
 
+/** Convert Arabic-Indic / Eastern-Arabic digits to Latin (brand uses Western numerals). */
+function latin(s: string): string {
+  return s.replace(/[٠-٩۰-۹]/g, (d) => {
+    const code = d.charCodeAt(0);
+    return String(code >= 0x06f0 ? code - 0x06f0 : code - 0x0660);
+  });
+}
+
 function esc(s: string): string {
   const map: Record<string, string> = {
     "&": "&amp;",
@@ -269,5 +277,57 @@ ${button(d.accountUrl, "إدارة اشتراكي")}`;
     subject: `تجديد اشتراك AdaaX #${d.orderNumber} — أداء`,
     html: layout({ title: "تجديد الاشتراك", preheader: "تم تجديد اشتراك AdaaX بنجاح", body }),
     text: `تم تجديد اشتراك AdaaX (${d.planLabel}) — طلب #${d.orderNumber}.\nالمبلغ: ${money(d.amount, d.currency)}\nساري حتى: ${until}\nحسابك: ${d.accountUrl}`,
+  };
+}
+
+type ReportMetric = { label: string; before?: string; after?: string; value?: string; unit?: string };
+
+/** Render report metric rows (before→after or a single value), Latin digits, RTL. */
+function metricsTable(metrics: ReportMetric[]): string {
+  const rows = metrics
+    .map((m) => {
+      const unit = m.unit ? ` ${esc(m.unit)}` : "";
+      let val: string;
+      if (m.before || m.after) {
+        val = `<span dir="ltr">${esc(latin(m.before ?? "—"))}${unit}</span> &nbsp;→&nbsp; <span dir="ltr" style="color:${C.green};font-weight:700">${esc(latin(m.after ?? "—"))}${unit}</span>`;
+      } else {
+        val = m.value
+          ? `<span dir="ltr" style="font-weight:700;color:${C.ink}">${esc(latin(m.value))}${unit}</span>`
+          : "—";
+      }
+      return `<tr>
+<td style="padding:9px 0;border-bottom:1px solid ${C.border};font-family:${FONT};font-size:14px;color:${C.text};text-align:right">${esc(m.label)}</td>
+<td style="padding:9px 0;border-bottom:1px solid ${C.border};font-family:${FONT};font-size:14px;text-align:left">${val}</td></tr>`;
+    })
+    .join("");
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows}</table>`;
+}
+
+export function installationReportEmail(d: {
+  orderNumber: number;
+  customerName?: string | null;
+  cpuModel?: string | null;
+  gpuModel?: string | null;
+  metrics: ReportMetric[];
+  reportUrl: string;
+  discordUrl: string;
+}): EmailContent {
+  const hi = d.customerName ? `أهلاً ${esc(d.customerName)} 👋` : "أهلاً بيك 👋";
+  const hw = [d.cpuModel ? `المعالج: ${esc(d.cpuModel)}` : "", d.gpuModel ? `كرت الشاشة: ${esc(d.gpuModel)}` : ""]
+    .filter(Boolean)
+    .join(" &nbsp;·&nbsp; ");
+  const body = `
+${heading("تم تركيب خدمتك بنجاح ✅")}
+${lead(`${hi}<br/>خلّصنا تحسين أداء جهازك، وده تقريرك المفصّل بالنتائج قبل وبعد.`)}
+${orderBadge(d.orderNumber)}
+${hw ? para(`<b>الجهاز:</b> ${hw}`) : ""}
+${infoBox(metricsTable(d.metrics))}
+${button(d.reportUrl, "عرض تقرير التركيب الكامل")}
+<p style="margin:18px 0 0;font-family:${FONT};font-size:13px;color:${C.muted};text-align:center">
+لأي استفسار بعد الخدمة تواصل معانا عبر <a href="${esc(d.discordUrl)}" style="color:${C.green}">ديسكورد</a>.</p>`;
+  return {
+    subject: `تقرير تركيب خدمتك جاهز #${d.orderNumber} — أداء`,
+    html: layout({ title: "تقرير عملية التركيب", preheader: "تم تركيب خدمتك — شوف نتائج الأداء قبل وبعد", body }),
+    text: `تم تركيب خدمتك بنجاح (طلب #${d.orderNumber}).\n${d.cpuModel ? "المعالج: " + d.cpuModel + "\n" : ""}شوف تقرير التركيب الكامل: ${d.reportUrl}\nلأي استفسار: ${d.discordUrl}`,
   };
 }

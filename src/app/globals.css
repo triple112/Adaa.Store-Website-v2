@@ -194,3 +194,39 @@
     animation: none !important;
   }
 }
+
+/* =========================================================================
+   Print — installation report ("حفظ كـ PDF")
+   Only #report-sheet prints; site chrome (navbar/footer/buttons) is hidden.
+   The visibility trick avoids depending on the chrome's markup.
+   ========================================================================= */
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  #report-sheet,
+  #report-sheet * {
+    visibility: visible !important;
+  }
+  #report-sheet {
+    position: absolute;
+    inset: 0;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  /* Force backgrounds/colors to render in print */
+  #report-sheet {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    margin: 14mm;
+  }
+}
