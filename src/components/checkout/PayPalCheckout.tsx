@@ -62,6 +62,9 @@ export function PayPalCheckout({
   total,
   currency,
   couponId,
+  email,
+  name,
+  phone,
   onSuccess,
 }: {
   enabled: boolean;
@@ -69,16 +72,46 @@ export function PayPalCheckout({
   total: number;
   currency: string;
   couponId?: string;
+  email: string;
+  name: string;
+  phone: string;
   onSuccess: (orderId?: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>("idle");
 
   // Keep latest values for the SDK callbacks without re-mounting the buttons.
-  const dataRef = useRef({ items, total, couponId });
-  dataRef.current = { items, total, couponId };
+  const dataRef = useRef({ items, total, couponId, email, name, phone });
+  dataRef.current = { items, total, couponId, email, name, phone };
   const successRef = useRef(onSuccess);
   successRef.current = onSuccess;
+
+  // Record the paid order server-side (verifies with PayPal when configured),
+  // so every payment lands in orders + contacts. Falls back gracefully.
+  async function recordOrder(paypalOrderId?: string): Promise<string | undefined> {
+    const d = dataRef.current;
+    try {
+      const res = await fetch("/api/checkout/record", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paypalOrderId,
+          items: d.items,
+          amount: d.total,
+          currency,
+          couponId: d.couponId,
+          email: d.email,
+          name: d.name,
+          phone: d.phone,
+        }),
+      });
+      if (!res.ok) return undefined;
+      const { orderId } = await res.json();
+      return orderId;
+    } catch {
+      return undefined;
+    }
+  }
 
   // 🧪 TEST-ONLY — remove with NEXT_PUBLIC_ENABLE_TEST_PAY before going live.
   const testPay = process.env.NEXT_PUBLIC_ENABLE_TEST_PAY === "true";
@@ -95,6 +128,9 @@ export function PayPalCheckout({
           amount: dataRef.current.total,
           currency,
           couponId: dataRef.current.couponId,
+          email: dataRef.current.email,
+          name: dataRef.current.name,
+          phone: dataRef.current.phone,
         }),
       });
       if (!res.ok) throw new Error();
@@ -145,9 +181,11 @@ export function PayPalCheckout({
                 ],
               });
             },
-            onApprove: async (_data, actions) => {
+            onApprove: async (data, actions) => {
               await actions.order.capture();
-              successRef.current();
+              const paypalOrderId = (data as { orderID?: string }).orderID;
+              const orderId = await recordOrder(paypalOrderId);
+              successRef.current(orderId);
             },
             onError: () => setStatus("error"),
           })

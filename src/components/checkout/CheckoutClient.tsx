@@ -8,6 +8,7 @@ import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { ArrowLeftIcon, CheckIcon } from "@/components/ui/icons";
 import { useCart } from "@/lib/cart/CartContext";
+import { toLatinDigits } from "@/lib/site-config";
 import { PayPalCheckout } from "./PayPalCheckout";
 
 const inputClass =
@@ -17,12 +18,25 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type CouponState = { couponId: string; discount: number; finalAmount: number } | null;
 
-export function CheckoutClient() {
+export function CheckoutClient({
+  initialName = "",
+  initialEmail = "",
+}: {
+  initialName?: string;
+  initialEmail?: string;
+}) {
   const router = useRouter();
   const { items, subtotal, currency, count, clear, openCart } = useCart();
-  const [form, setForm] = useState({ name: "", email: "", discord: "", whatsapp: "", notes: "" });
+  const [form, setForm] = useState({
+    name: initialName,
+    email: initialEmail,
+    phone: "",
+    discord: "",
+    notes: "",
+  });
   const [agreed, setAgreed] = useState(false);
   const [done, setDone] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   // Coupon
   const [couponCode, setCouponCode] = useState("");
@@ -64,23 +78,30 @@ export function CheckoutClient() {
   }
 
   const emailValid = EMAIL_RE.test(form.email);
-  const valid = form.name.trim().length > 1 && emailValid && agreed && items.length > 0;
+  const phoneDigits = toLatinDigits(form.phone).replace(/[^\d]/g, "");
+  const phoneValid = phoneDigits.length >= 7;
+  const valid =
+    form.name.trim().length > 1 && emailValid && phoneValid && agreed && items.length > 0;
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleSuccess = (orderId?: string) => {
-    clear();
     if (orderId) {
+      // Show the success state immediately so the empty-cart screen never flashes
+      // while we navigate to the order page.
+      setRedirecting(true);
+      clear();
       router.push(`/order/${orderId}`);
       return;
     }
+    clear();
     setDone(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Success screen
-  if (done) {
+  // Success / redirecting screen — takes precedence over the empty-cart screen.
+  if (done || redirecting) {
     return (
       <Section spacing="none" className="ambient-glow overflow-hidden pb-24 pt-32 sm:pt-36">
         <Container size="default" className="relative z-10">
@@ -187,6 +208,24 @@ export function CheckoutClient() {
 
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-subtle">
+                    رقم الجوال (واتساب) <span className="text-primary-light">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    value={form.phone}
+                    onChange={set("phone")}
+                    placeholder="+966..."
+                    dir="ltr"
+                    className={inputClass}
+                  />
+                  {form.phone && !phoneValid && (
+                    <p className="mt-1.5 text-xs text-red-400">رقم الجوال غير صحيح.</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-subtle">
                     اسم المستخدم في ديسكورد <span className="text-faint">(اختياري)</span>
                   </label>
                   <input
@@ -194,20 +233,6 @@ export function CheckoutClient() {
                     value={form.discord}
                     onChange={set("discord")}
                     placeholder="username"
-                    dir="ltr"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-subtle">
-                    رقم واتساب <span className="text-faint">(اختياري)</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={form.whatsapp}
-                    onChange={set("whatsapp")}
-                    placeholder="+20..."
                     dir="ltr"
                     className={inputClass}
                   />
@@ -259,6 +284,9 @@ export function CheckoutClient() {
                 total={total}
                 currency={currency}
                 couponId={coupon?.couponId}
+                email={form.email}
+                name={form.name}
+                phone={phoneDigits}
                 onSuccess={handleSuccess}
               />
             </div>

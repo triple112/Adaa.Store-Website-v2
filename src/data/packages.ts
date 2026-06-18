@@ -36,7 +36,7 @@ export type Package = {
 export const packages: Package[] = [
   {
     id: "basic",
-    name: "النسخة العادية",
+    name: "النسخة العادية V2",
     tagline: "بديل اقتصادي للبريميم",
     image: "/packages/basic.png",
     price: 35,
@@ -91,7 +91,7 @@ export const packages: Package[] = [
   },
   {
     id: "premium",
-    name: "النسخة البريميم",
+    name: "النسخة البريميم V2",
     tagline: "الخيار الأفضل لمعظم المستخدمين",
     image: "/packages/premium.png",
     price: 50,
@@ -155,7 +155,7 @@ export const packages: Package[] = [
   },
   {
     id: "ultimate",
-    name: "النسخة الألتميت",
+    name: "النسخة الألتميت V2",
     tagline: "أفضل خدمة لتحسين الأداء",
     image: "/packages/ultimate.png",
     price: 80,

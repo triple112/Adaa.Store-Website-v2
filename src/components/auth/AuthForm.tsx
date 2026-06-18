@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { requestPasswordReset } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
 
 type Mode = "login" | "register";
@@ -57,6 +58,24 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
       }
     } catch (err) {
       setError(translateAuthError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgot() {
+    if (!email) {
+      setError("اكتب بريدك الإلكتروني أولاً.");
+      return;
+    }
+    setError(null);
+    setNotice(null);
+    setLoading(true);
+    try {
+      await requestPasswordReset(email);
+      setNotice("لو البريد مسجّل، هيوصلك رابط لإعادة تعيين كلمة المرور.");
+    } catch {
+      setNotice("لو البريد مسجّل، هيوصلك رابط لإعادة تعيين كلمة المرور.");
     } finally {
       setLoading(false);
     }
@@ -145,6 +164,17 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
           onChange={(e) => setPassword(e.target.value)}
           className={inputClass}
         />
+
+        {isLogin && (
+          <button
+            type="button"
+            onClick={handleForgot}
+            disabled={loading}
+            className="-mt-1 self-start text-xs font-semibold text-muted transition-colors hover:text-primary-light disabled:opacity-50"
+          >
+            نسيت كلمة المرور؟
+          </button>
+        )}
 
         {error && (
           <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">

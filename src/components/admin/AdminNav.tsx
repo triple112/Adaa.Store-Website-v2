@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin/subscriptions", label: "الاشتراكات" },
   { href: "/admin/users", label: "المستخدمين" },
   { href: "/admin/orders", label: "الطلبات" },
+  { href: "/admin/contacts", label: "جهات الاتصال" },
   { href: "/admin/settings", label: "الإعدادات" },
 ];
 

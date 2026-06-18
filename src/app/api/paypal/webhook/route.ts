@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscription, paypalFetch } from "@/lib/paypal/client";
+import { sendSubscriptionRenewal } from "@/lib/email/send";
 
 /**
  * PayPal webhook receiver. Keeps the subscriptions table in sync with PayPal:
@@ -124,19 +125,41 @@ export async function POST(request: Request) {
             .maybeSingle();
 
           if (subRow) {
-            await admin.from("orders").upsert(
-              {
-                user_id: subRow.user_id,
-                type: "subscription",
-                items: [{ name: "تجديد اشتراك AdaaX" }],
-                amount: Number(resource?.amount?.total ?? 0),
-                currency: resource?.amount?.currency ?? "USD",
-                status: "paid",
-                provider: "paypal",
-                paypal_order_id: resource.id, // sale id — unique per payment
-              },
-              { onConflict: "paypal_order_id" },
-            );
+            const amount = Number(resource?.amount?.total ?? 0);
+            const currency = resource?.amount?.currency ?? "USD";
+            const { data: orderRow } = await admin
+              .from("orders")
+              .upsert(
+                {
+                  user_id: subRow.user_id,
+                  type: "subscription",
+                  items: [{ name: "تجديد اشتراك AdaaX" }],
+                  amount,
+                  currency,
+                  status: "paid",
+                  provider: "paypal",
+                  paypal_order_id: resource.id, // sale id — unique per payment
+                },
+                { onConflict: "paypal_order_id" },
+              )
+              .select("id, order_number")
+              .maybeSingle();
+
+            // Renewal receipt email (best-effort).
+            const { data: profile } = await admin
+              .from("profiles")
+              .select("email")
+              .eq("id", subRow.user_id)
+              .maybeSingle();
+            if (orderRow && profile?.email) {
+              await sendSubscriptionRenewal(profile.email, {
+                orderNumber: orderRow.order_number,
+                planLabel: subRow.plan === "yearly" ? "سنوي" : "شهري",
+                amount,
+                currency,
+                periodEnd: nextBilling,
+              }).catch(() => {});
+            }
           }
         }
         break;

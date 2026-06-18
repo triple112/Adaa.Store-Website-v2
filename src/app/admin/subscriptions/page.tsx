@@ -11,7 +11,7 @@ export default async function AdminSubscriptionsPage() {
   const { data } = await db
     .from("subscriptions")
     .select(
-      "id, plan, status, current_period_end, cancel_at_period_end, paypal_subscription_id, profiles(email, display_name), license_devices(id, hwid_hash, bound_at)",
+      "id, plan, status, current_period_end, cancel_at_period_end, paypal_subscription_id, profiles(email, display_name), license_devices(id, hwid_hash, device_label, bound_at, last_seen_at)",
     )
     .order("created_at", { ascending: false })
     .returns<AdminSubscription[]>();

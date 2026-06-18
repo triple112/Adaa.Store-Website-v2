@@ -6,6 +6,7 @@ import {
   adminCancelSubscription,
   rebindDevice,
 } from "@/lib/admin/actions";
+import { formatDateTime } from "@/lib/site-config";
 
 export type AdminSubscription = {
   id: string;
@@ -15,8 +16,19 @@ export type AdminSubscription = {
   cancel_at_period_end: boolean;
   paypal_subscription_id: string | null;
   profiles: { email: string | null; display_name: string | null } | null;
-  license_devices: { id: string; hwid_hash: string; bound_at: string }[];
+  license_devices: {
+    id: string;
+    hwid_hash: string;
+    device_label: string | null;
+    bound_at: string;
+    last_seen_at: string | null;
+  }[];
 };
+
+function formatSeen(value: string | null): string {
+  if (!value) return "لم يُفتح بعد";
+  return formatDateTime(value);
+}
 
 function isActive(s: AdminSubscription) {
   if (s.status === "expired") return false;
@@ -61,7 +73,7 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: AdminSubs
                       ? `حتى ${s.current_period_end.slice(0, 10)}`
                       : "بدون تاريخ"}
                     {device
-                      ? ` · جهاز مربوط (${device.hwid_hash.slice(0, 8)}…)`
+                      ? ` · جهاز: ${device.device_label || device.hwid_hash.slice(0, 8) + "…"} · آخر ظهور ${formatSeen(device.last_seen_at)}`
                       : " · لا يوجد جهاز مربوط"}
                   </p>
                 </div>

@@ -3,8 +3,10 @@ import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { AuthSync } from "@/components/layout/AuthSync";
 import { CartProvider } from "@/lib/cart/CartContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { getUser } from "@/lib/auth/dal";
 
 // Body / UI font
 const cairo = Cairo({
@@ -39,11 +41,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getUser();
+
   return (
     <html
       lang="ar"
@@ -51,6 +55,7 @@ export default function RootLayout({
       className={`${cairo.variable} ${ibmPlexArabic.variable} h-full antialiased`}
     >
       <body className="flex min-h-screen flex-col bg-bg text-foreground">
+        <AuthSync serverUserId={user?.id ?? null} />
         <CartProvider>
           <Navbar />
           <main className="flex-1">{children}</main>

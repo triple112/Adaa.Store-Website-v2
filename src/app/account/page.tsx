@@ -3,7 +3,8 @@ import Link from "next/link";
 import { requireUser, getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { CancelSubscriptionButton } from "@/components/account/CancelSubscriptionButton";
-import { formatOrderNumber } from "@/lib/site-config";
+import { formatOrderNumber, formatDate } from "@/lib/site-config";
+import { isSubscriptionActive } from "@/lib/subscriptions/status";
 
 export const metadata: Metadata = { title: "حسابي" };
 export const dynamic = "force-dynamic";
@@ -26,15 +27,6 @@ const ORDER_STATUS_LABEL: Record<string, string> = {
   refunded: "مسترد",
 };
 
-function formatDate(value: string | null): string {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
 type SubscriptionRow = {
   id: string;
   plan: string;
@@ -42,15 +34,6 @@ type SubscriptionRow = {
   current_period_end: string | null;
   cancel_at_period_end: boolean;
 };
-
-/** Access is granted while the paid period hasn't ended yet. */
-function isSubscriptionActive(sub: SubscriptionRow | null): boolean {
-  if (!sub) return false;
-  if (sub.status === "expired") return false;
-  return Boolean(
-    sub.current_period_end && new Date(sub.current_period_end) > new Date(),
-  );
-}
 
 type OrderRow = {
   id: string;

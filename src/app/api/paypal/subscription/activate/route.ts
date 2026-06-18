@@ -7,6 +7,7 @@ import {
   planFromPayPalId,
 } from "@/lib/paypal/client";
 import { getAdaaxPricing } from "@/lib/settings";
+import { sendSubscriptionConfirmation } from "@/lib/email/send";
 
 /**
  * Called by the PayPal subscription button's onApprove. Verifies the subscription
@@ -92,6 +93,8 @@ export async function POST(request: Request) {
     .upsert(
       {
         user_id: user.id,
+        email: user.email ?? null,
+        name: (user.user_metadata?.full_name as string) ?? null,
         type: "subscription",
         items: [{ name: `اشتراك AdaaX (${plan === "yearly" ? "سنوي" : "شهري"})` }],
         amount: chargedAmount,
@@ -102,8 +105,18 @@ export async function POST(request: Request) {
       },
       { onConflict: "paypal_order_id" },
     )
-    .select("id")
+    .select("id, order_number")
     .maybeSingle();
+
+  if (orderRow && status === "ACTIVE" && user.email) {
+    await sendSubscriptionConfirmation(user.email, {
+      orderNumber: orderRow.order_number,
+      orderId: orderRow.id,
+      planLabel: plan === "yearly" ? "سنوي" : "شهري",
+      amount: chargedAmount,
+      currency: "USD",
+    }).catch(() => {});
+  }
 
   return NextResponse.json({
     ok: true,

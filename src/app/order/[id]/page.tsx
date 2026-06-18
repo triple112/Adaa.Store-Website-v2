@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { siteConfig, formatOrderNumber } from "@/lib/site-config";
+import { notFound } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { siteConfig, formatOrderNumber, formatDate } from "@/lib/site-config";
 import { CopyButton } from "@/components/order/CopyButton";
 import { CheckIcon } from "@/components/ui/icons";
 
@@ -38,29 +38,18 @@ function money(amount: number, currency: string) {
   return `${currency === "USD" ? "$" : currency}${amount}`;
 }
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
 export default async function OrderPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?redirect=/order/${id}`);
-
-  // RLS guarantees the user can only read their own order.
-  const { data: order } = await supabase
+  // Confirmation pages are reachable by their unguessable order UUID — this lets
+  // freshly-created guest accounts (not yet signed in) see their order. The UUID
+  // acts as the access token (standard order-confirmation-link pattern).
+  const admin = createAdminClient();
+  const { data: order } = await admin
     .from("orders")
     .select("id, order_number, type, items, amount, currency, status, created_at")
     .eq("id", id)

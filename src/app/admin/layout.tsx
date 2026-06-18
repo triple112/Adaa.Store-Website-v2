@@ -13,7 +13,7 @@ export default async function AdminLayout({
   await requireAdmin(); // redirects non-admins home
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 pb-20 pt-28 sm:pt-32">
+    <section className="mx-auto w-full max-w-7xl px-4 pb-20 pt-28 sm:pt-32">
       <h1 className="mb-6 font-display text-3xl font-bold text-white">لوحة التحكم</h1>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[210px_1fr]">
         <aside className="lg:sticky lg:top-28 lg:self-start">
