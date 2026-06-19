@@ -24,7 +24,9 @@ const PAYPAL_CSV = "scripts/data/paypal_parsed_customers.csv";
 const WOO_CSV = "scripts/data/filtered_orders_for_migration.csv";
 const CONFIRM = process.env.PAYPAL_CONFIRM === "1";
 const V2_CUTOFF = Date.UTC(2026, 3, 1); // 2026-04-01
-const ORDER_BAND = 90001; // separate historical-invoice number band
+// Low band (below the woo 3141+ range) so these historical merged-invoice orders
+// sort to the BOTTOM of the admin list — the real/recent orders surface first.
+const ORDER_BAND = 1000;
 
 function parseCsv(text) {
   const rows = []; let row = [], f = "", q = false;
