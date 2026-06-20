@@ -10,7 +10,11 @@ export function Packages() {
       <Container size="wide" className="relative z-10">
         <SectionHeading
           eyebrow="الباقات"
-          title="اختر الباقة المناسبة لجهازك"
+          title={
+            <>
+              اختر الباقة <span className="text-gradient">المناسبة</span> لجهازك
+            </>
+          }
           subtitle="ثلاث نسخ تغطّي كل الاحتياجات — من الضبط الاقتصادي إلى أقصى أداء ممكن للأجهزة القوية."
           className="mb-14"
         />

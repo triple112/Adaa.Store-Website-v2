@@ -1,0 +1,1 @@
+npx shadcn@latest add https://21st.dev/r/muhammad-binsalman/ethereal-beams-hero

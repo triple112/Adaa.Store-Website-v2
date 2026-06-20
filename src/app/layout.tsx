@@ -3,6 +3,7 @@ import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { SiteFrame } from "@/components/layout/SiteFrame";
 import { AuthSync } from "@/components/layout/AuthSync";
 import { CartProvider } from "@/lib/cart/CartContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -58,7 +59,9 @@ export default async function RootLayout({
         <AuthSync serverUserId={user?.id ?? null} />
         <CartProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1">
+            <SiteFrame>{children}</SiteFrame>
+          </main>
           <Footer />
           <CartDrawer />
         </CartProvider>

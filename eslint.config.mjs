@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Reference-only design snippets — not shipped, not linted.
+    "Desgins/**",
   ]),
 ]);
 

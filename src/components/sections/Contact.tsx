@@ -45,7 +45,12 @@ export function Contact() {
     <Section className="overflow-hidden">
       <Container>
         <SectionHeading
-          title="عندك استفسار؟ احنا موجودين."
+          eyebrow="تواصل معنا"
+          title={
+            <>
+              عندك استفسار؟ <span className="text-gradient">احنا موجودين.</span>
+            </>
+          }
           subtitle="فريق Adaa جاهز للرد على استفساراتك وخدمتك في أي وقت عبر قنواتنا الرسمية."
           className="mb-12"
         />

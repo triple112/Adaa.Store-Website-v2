@@ -1,29 +1,23 @@
 import { Marquee } from "@/components/ui/Marquee";
-import { Section } from "@/components/ui/Section";
 import { reviewsBottom, reviewsTop } from "@/data/reviews";
 import { ReviewCard } from "./ReviewCard";
 
-export function Reviews() {
-  return (
-    <Section id="reviews" spacing="none" className="overflow-hidden pb-12 pt-2">
-      {/* Cards pack back-to-back (repeat fills any screen). Pause on hover so the
-          text can be selected/copied. The second row only appears on 2K+ screens
-          — 1920 and below show a single, comfortable row. */}
-      <div className="flex flex-col gap-5">
-        <Marquee direction="left" durationSec={200} pauseOnHover repeat={4}>
-          {reviewsTop.map((review) => (
-            <ReviewCard key={review.id} review={review} />
-          ))}
-        </Marquee>
+/**
+ * A single marquee row of reviews. Split into two rows (top/bottom) so the
+ * landing can place only the top row inside the first viewport and let the
+ * bottom row sit below the fold — it reveals on scroll instead of cramming
+ * both rows onto one screen. Both rows travel the same direction; the top row
+ * is the faster of the two.
+ */
+export function ReviewsRow({ row }: { row: "top" | "bottom" }) {
+  const reviews = row === "top" ? reviewsTop : reviewsBottom;
+  const durationSec = row === "top" ? 180 : 220;
 
-        <div className="hidden min-[2000px]:block">
-          <Marquee direction="left" durationSec={180} pauseOnHover repeat={4}>
-            {reviewsBottom.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </Marquee>
-        </div>
-      </div>
-    </Section>
+  return (
+    <Marquee direction="left" durationSec={durationSec} pauseOnHover repeat={4}>
+      {reviews.map((review) => (
+        <ReviewCard key={review.id} review={review} />
+      ))}
+    </Marquee>
   );
 }

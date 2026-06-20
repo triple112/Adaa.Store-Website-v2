@@ -28,7 +28,11 @@ export default function ServicesPage() {
       <Container size="wide" className="relative z-10">
         <SectionHeading
           eyebrow="خدماتنا"
-          title="كل ما تحتاجه لأداء أعلى"
+          title={
+            <>
+              كل ما تحتاجه <span className="text-gradient">لأداء أعلى</span>
+            </>
+          }
           subtitle="نبدأ بباقات تحسين الأداء، إلى جانب مجموعة خدمات متكاملة للنظام وكسر السرعة والفحص والاستشارة."
           className="mb-14"
         />

@@ -8,6 +8,11 @@ type SectionHeadingProps = {
   className?: string;
 };
 
+/**
+ * Section heading: a pill eyebrow + display title + optional subtitle.
+ * Pass a `<span className="text-gradient">…</span>` inside `title` to make a
+ * keyword glow — that highlight is the signature treatment across the site.
+ */
 export function SectionHeading({
   title,
   subtitle,
@@ -18,17 +23,18 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4",
+        "flex flex-col gap-5",
         align === "center" ? "items-center text-center" : "items-start text-start",
         className,
       )}
     >
       {eyebrow ? (
-        <span className="text-sm font-semibold uppercase tracking-widest text-primary-light">
+        <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.08] px-4 py-1.5 text-xs font-semibold tracking-wide text-primary-light backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary-light shadow-[0_0_8px_var(--color-primary-light)]" />
           {eyebrow}
         </span>
       ) : null}
-      <h2 className="font-display text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
+      <h2 className="font-display text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl md:text-5xl">
         {title}
       </h2>
       {subtitle ? (

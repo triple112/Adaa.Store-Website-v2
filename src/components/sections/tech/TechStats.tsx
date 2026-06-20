@@ -14,7 +14,12 @@ export function TechStats() {
     <Section id="performance" className="overflow-hidden">
       <Container size="wide">
         <SectionHeading
-          title="أداء مستقر، هندسة دقيقة."
+          eyebrow="تحت الغطاء"
+          title={
+            <>
+              أداء مستقر، <span className="text-gradient">هندسة دقيقة.</span>
+            </>
+          }
           subtitle="نحن لا نعتمد على العشوائية. جميع التعديلات مدروسة لتمنحك استقراراً تاماً، وليس فقط أرقام فريمات وهمية."
           className="mb-14"
         />

@@ -77,6 +77,42 @@
 }
 
 /* =========================================================================
+   Ambient frame texture
+   A fine "tech mesh" grid + a faint diagonal carbon weave, kept barely
+   visible. Lives INSIDE the site frame (.frame-texture is absolutely filled by
+   SiteFrame) and fades out before the side rails so it never crosses them.
+   ========================================================================= */
+.frame-texture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    /* horizontal + vertical mesh lines */
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    /* subtle carbon-weave diagonals */
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0 1px, transparent 1px 7px);
+  background-size:
+    44px 44px,
+    44px 44px,
+    14px 14px;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
+}
+
+/* Vertical frame rail — a hairline that fades at both ends. */
+.frame-rail {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.13) 10%,
+    rgba(255, 255, 255, 0.13) 90%,
+    transparent 100%
+  );
+}
+
+/* =========================================================================
    Reusable effects
    ========================================================================= */
 

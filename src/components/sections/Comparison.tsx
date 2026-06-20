@@ -34,7 +34,12 @@ export function Comparison() {
     <Section className="overflow-hidden">
       <Container>
         <SectionHeading
-          title="الفرق بين خدمة تحسين الأداء والتويكات العشوائية."
+          eyebrow="المقارنة"
+          title={
+            <>
+              الفرق بين <span className="text-gradient">تحسين الأداء</span> والتويكات العشوائية.
+            </>
+          }
           subtitle="في عالم مليء بملفات الـ تويك العشوائية والوهمية، نحن نقدم هندسة نظام حقيقية واستقرار مبني على البيانات."
           className="mb-14"
         />
