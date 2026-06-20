@@ -59,7 +59,7 @@ export default async function RootLayout({
         <AuthSync serverUserId={user?.id ?? null} />
         <CartProvider>
           <Navbar />
-          <main className="flex-1">
+          <main className="flex flex-1 flex-col">
             <SiteFrame>{children}</SiteFrame>
           </main>
           <Footer />

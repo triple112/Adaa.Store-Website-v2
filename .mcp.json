@@ -3,6 +3,10 @@
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=toabcrdxnbmhmtnhmied&features=docs,account,debugging,database,branching,functions,development,storage"
+    },
+    "paypal": {
+      "type": "http",
+      "url": "https://mcp.paypal.com/http"
     }
   }
 }

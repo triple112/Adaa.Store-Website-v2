@@ -19,7 +19,7 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "discord" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<"google" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -81,7 +81,7 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
     }
   }
 
-  async function handleOAuth(provider: "google" | "discord") {
+  async function handleOAuth(provider: "google") {
     setError(null);
     setOauthLoading(provider);
     const supabase = createClient();
@@ -99,8 +99,8 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-surface p-7 shadow-[0_8px_40px_rgba(0,0,0,0.45)] sm:p-9">
-      <h1 className="font-display text-2xl font-bold text-white">
+    <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-surface p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] sm:p-10">
+      <h1 className="font-display text-3xl font-bold text-white">
         {isLogin ? "تسجيل الدخول" : "إنشاء حساب"}
       </h1>
       <p className="mt-2 text-sm text-muted">
@@ -110,20 +110,13 @@ export function AuthForm({ mode, redirectTo }: { mode: Mode; redirectTo: string 
       </p>
 
       {/* OAuth */}
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6">
         <OAuthButton
-          label="المتابعة عبر Google"
+          label={isLogin ? "تسجيل دخول عن طريق Google" : "التسجيل عن طريق Google"}
           loading={oauthLoading === "google"}
           disabled={oauthLoading !== null || loading}
           onClick={() => handleOAuth("google")}
           icon={<GoogleIcon />}
-        />
-        <OAuthButton
-          label="المتابعة عبر Discord"
-          loading={oauthLoading === "discord"}
-          disabled={oauthLoading !== null || loading}
-          onClick={() => handleOAuth("discord")}
-          icon={<DiscordIcon />}
         />
       </div>
 
@@ -231,7 +224,7 @@ function OAuthButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-elevated px-4 py-3 text-sm font-semibold text-white transition-colors hover:border-primary-light/40 hover:bg-white/5 disabled:opacity-50 disabled:pointer-events-none"
+      className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-elevated px-4 py-3 text-sm font-semibold text-white transition-colors hover:border-primary-light/40 hover:bg-white/5 disabled:opacity-50 disabled:pointer-events-none"
     >
       <span className="h-5 w-5">{icon}</span>
       {loading ? "..." : label}
@@ -252,7 +245,7 @@ function translateAuthError(err: unknown): string {
 
 function GoogleIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+    <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden>
       <path
         fill="#FFC107"
         d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 12.9 3 4 11.9 4 23s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.5-.4-3.5z"
@@ -269,14 +262,6 @@ function GoogleIcon() {
         fill="#1976D2"
         d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4 5.5l6.3 5.3C41.2 36 44 30.5 44 23c0-1.3-.1-2.5-.4-3.5z"
       />
-    </svg>
-  );
-}
-
-function DiscordIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="#5865F2" aria-hidden>
-      <path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.5a14.6 14.6 0 0 1 4.3 2.2 13.7 13.7 0 0 0-11.2 0A14.6 14.6 0 0 1 12.6 3.5L12.4 3a19.8 19.8 0 0 0-4.9 1.4C4.3 9.2 3.4 13.9 3.8 18.5a19.9 19.9 0 0 0 6 3.1l.5-.8c-.8-.3-1.6-.7-2.3-1.2l.6-.4a14.2 14.2 0 0 0 12.2 0l.6.4c-.7.5-1.5.9-2.3 1.2l.5.8a19.9 19.9 0 0 0 6-3.1c.5-5.3-.9-10-3.8-14.1zM9.7 15.7c-1 0-1.7-.9-1.7-2s.8-2 1.7-2c1 0 1.7.9 1.7 2s-.7 2-1.7 2zm4.6 0c-1 0-1.7-.9-1.7-2s.8-2 1.7-2c1 0 1.7.9 1.7 2s-.7 2-1.7 2z" />
     </svg>
   );
 }

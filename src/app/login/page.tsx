@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { AuthReviewsColumn } from "@/components/auth/AuthReviewsColumn";
+import { Section } from "@/components/ui/Section";
+import { Container } from "@/components/ui/Container";
 
 export const metadata: Metadata = { title: "تسجيل الدخول" };
 export const dynamic = "force-dynamic";
@@ -16,8 +19,17 @@ export default async function LoginPage({
       : "/account";
 
   return (
-    <section className="flex min-h-[80vh] items-center justify-center px-4 pb-16 pt-28">
-      <AuthForm mode="login" redirectTo={redirectTo} />
-    </section>
+    <Section spacing="none" className="flex flex-1 flex-col justify-center pb-16 pt-28 sm:pt-32">
+      <Container size="wide" className="relative z-10">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          {/* RTL: first cell is on the right → the login form */}
+          <div className="flex justify-center">
+            <AuthForm mode="login" redirectTo={redirectTo} />
+          </div>
+          {/* Left cell → customer reviews */}
+          <AuthReviewsColumn className="hidden lg:flex" />
+        </div>
+      </Container>
+    </Section>
   );
 }

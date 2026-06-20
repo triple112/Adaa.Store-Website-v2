@@ -6,8 +6,8 @@
  */
 export function SiteFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative mx-auto w-full max-w-[1280px]">
-      {/* Ambient texture, clipped to the frame */}
+    <div className="relative mx-auto flex w-full max-w-[1280px] flex-1 flex-col">
+      {/* Ambient texture, clipped to the frame — fills the full frame height */}
       <div aria-hidden className="frame-texture" />
 
       {/* Side rails (desktop only) — sit above content so the lines stay crisp */}
@@ -21,7 +21,7 @@ export function SiteFrame({ children }: { children: React.ReactNode }) {
       />
 
       {/* Content */}
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 flex flex-1 flex-col">{children}</div>
     </div>
   );
 }

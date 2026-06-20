@@ -145,6 +145,43 @@
   mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
 }
 
+/* Top/bottom fade mask for vertical marquees */
+.fade-y {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
+
+/* =========================================================================
+   Vertical marquee (used by the auth page reviews column)
+   Two identical groups stacked; one scrolls up while the other fills in.
+   ========================================================================= */
+@keyframes adaa-marquee-y {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--marquee-gap-y, 16px)));
+  }
+}
+
+.adaa-marquee-y {
+  display: flex;
+  flex-direction: column;
+  gap: var(--marquee-gap-y, 16px);
+}
+
+.adaa-marquee-y-group {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--marquee-gap-y, 16px);
+  animation: adaa-marquee-y var(--marquee-duration-y, 50s) linear infinite;
+}
+
+.adaa-marquee-y[data-pausable="true"]:hover .adaa-marquee-y-group {
+  animation-play-state: paused;
+}
+
 /* =========================================================================
    Marquee engine
    Two identical groups, each animated the same. The first scrolls off one
@@ -226,6 +263,7 @@
     scroll-behavior: auto;
   }
   .adaa-marquee-group,
+  .adaa-marquee-y-group,
   .adaa-chart-group {
     animation: none !important;
   }
