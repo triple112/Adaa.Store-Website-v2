@@ -11,8 +11,9 @@
  * bottom of that zone (`verticalBeamOffset` ≈ -0.42), so it meets the screenshot's
  * top edge at EVERY viewport width — even when the copy reflows taller on mobile.
  *
- * The LaserFlow canvas clears to opaque black, so this overlay also paints the
- * hero's black backdrop; the screenshot above it (z-10) masks the beam's tail.
+ * The LaserFlow canvas renders transparently, so the site's mesh/background shows
+ * through; a soft dark radial sits behind the beam for contrast. The screenshot
+ * above (z-10) masks the beam's tail and its own bottom fades out into the page.
  */
 import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
@@ -30,7 +31,7 @@ export function AdaaxHero() {
         className="pointer-events-none absolute inset-0 z-0"
         style={{
           background:
-            "radial-gradient(70% 56% at 27% 24%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.22) 45%, transparent 78%)",
+            "radial-gradient(70% 56% at 27% 34%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.22) 45%, transparent 78%)",
         }}
       />
 
@@ -75,7 +76,9 @@ export function AdaaxHero() {
             <h1 className="mt-7 font-display text-[clamp(2.4rem,5.5vw,4.75rem)] font-bold leading-[1.1] tracking-tight text-white [text-shadow:0_0_60px_rgba(52,224,127,0.2)]">
               قوة جهازك بالكامل،
               <br />
-              في تطبيق واحد <span className="text-gradient">اسمه AdaaX.</span>
+              في تطبيق واحد
+              <br />
+              <span className="text-gradient whitespace-nowrap">اسمه AdaaX.</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
@@ -106,11 +109,13 @@ export function AdaaxHero() {
           className="pointer-events-none absolute inset-x-5 -top-28 z-20 h-28 blur-2xl mix-blend-screen"
           style={{
             background:
-              "radial-gradient(55% 135% at 20% 100%, rgba(52,224,127,0.45) 0%, transparent 68%), radial-gradient(150% 85% at 55% 100%, rgba(52,224,127,0.20) 0%, transparent 78%)",
+              "radial-gradient(50% 135% at 20% 100%, rgba(52,224,127,0.45) 0%, transparent 68%), radial-gradient(150% 85% at 55% 100%, rgba(52,224,127,0.20) 0%, transparent 78%)",
           }}
         />
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
+        {/* Full screenshot — shown complete. The page's mesh/background stays
+            continuous below it (no dark band/shadow), so the transition reads soft. */}
+        <div className="relative overflow-hidden rounded-2xl border border-white/10">
           <Image
             src="/adaax/dashboard.png"
             alt="واجهة تطبيق AdaaX — لوحة مراقبة وتحسين أداء الجهاز"
@@ -121,12 +126,6 @@ export function AdaaxHero() {
           />
         </div>
       </div>
-
-      {/* Fade the black canvas into the page colour below the screenshot */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-40 bg-gradient-to-t from-[#0e0e0e] to-transparent"
-      />
     </section>
   );
 }
