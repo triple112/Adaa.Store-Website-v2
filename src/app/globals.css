@@ -270,6 +270,50 @@
 }
 
 /* =========================================================================
+   AdaaX hero — green laser landing on the app screenshot
+   The beam (WebGL) and the flat-framed screenshot live on the left column of
+   the /adaax hero; these helpers light up the impact point on the top edge.
+   ========================================================================= */
+
+/* Bright scan line where the beam strikes the screenshot's top edge */
+@keyframes adaax-scan {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scaleX(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+.adaax-scanline {
+  animation: adaax-scan 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Soft pulsing bloom at the impact point */
+@keyframes adaax-bloom {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.adaax-bloom {
+  animation: adaax-bloom 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adaax-scanline,
+  .adaax-bloom {
+    animation: none !important;
+  }
+}
+
+/* =========================================================================
    Print — installation report ("حفظ كـ PDF")
    Only #report-sheet prints; site chrome (navbar/footer/buttons) is hidden.
    The visibility trick avoids depending on the chrome's markup.

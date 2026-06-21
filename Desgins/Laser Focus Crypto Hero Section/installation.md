@@ -1,0 +1,1 @@
+npx shadcn@latest add https://21st.dev/r/muhammad-binsalman/laser-focus-crypto-hero-section
